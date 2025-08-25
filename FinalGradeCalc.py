@@ -7,24 +7,24 @@ student_records = {}
 
 
 def compute_final_grade(raw):
-    if 50 <= raw <= 54:
-        return 3.0
-    elif 55 <= raw <= 60:
-        return 2.75
-    elif 61 <= raw <= 66:
-        return 2.5
-    elif 67 <= raw <= 72:
-        return 2.25
-    elif 73 <= raw <= 78:
-        return 2.0
-    elif 79 <= raw <= 84:
-        return 1.75
-    elif 85 <= raw <= 90:
-        return 1.5
-    elif 91 <= raw <= 97:
-        return 1.25
-    elif 98 <= raw <= 100:
+    if raw >= 98:
         return 1.0
+    elif raw >= 91:
+        return 1.25
+    elif raw >= 85:
+        return 1.5
+    elif raw >= 79:
+        return 1.75
+    elif raw >= 73:
+        return 2.0
+    elif raw >= 67:
+        return 2.25
+    elif raw >= 61:
+        return 2.5
+    elif raw >= 55:
+        return 2.75
+    elif raw >= 50:
+        return 3.0
     else:
         return 5.0
 
@@ -42,28 +42,52 @@ def generate_fields():
 
 
 def generate_quiz_fields(count):
+    global quiz_frame
+
+    quiz_frame.destroy()
+    quiz_frame = tk.Frame(quiz_wrapper)
+    quiz_frame.pack()
+
+    quiz_score_entries.clear()
+    quiz_item_entries.clear()
+
     for i in range(count):
-        tk.Label(quiz_frame, text=f"Quiz {i+1} Score:").grid(row=i, column=0)
-        score_entry = tk.Entry(quiz_frame, width=10)
-        score_entry.grid(row=i, column=1)
+        row = tk.Frame(quiz_frame)
+        row.pack(pady=2)
+
+        tk.Label(row, text=f"Quiz {i+1} Score:").pack(side=tk.LEFT)
+        score_entry = tk.Entry(row, width=10)
+        score_entry.pack(side=tk.LEFT, padx=5)
         quiz_score_entries.append(score_entry)
 
-        tk.Label(quiz_frame, text="Items:").grid(row=i, column=2)
-        item_entry = tk.Entry(quiz_frame, width=10)
-        item_entry.grid(row=i, column=3)
+        tk.Label(row, text="Items:").pack(side=tk.LEFT)
+        item_entry = tk.Entry(row, width=10)
+        item_entry.pack(side=tk.LEFT, padx=5)
         quiz_item_entries.append(item_entry)
 
 
 def generate_unit_fields(count):
+    global unit_frame
+
+    unit_frame.destroy()
+    unit_frame = tk.Frame(unit_wrapper)
+    unit_frame.pack()
+
+    unit_score_entries.clear()
+    unit_item_entries.clear()
+
     for i in range(count):
-        tk.Label(unit_frame, text=f"Unit {i+1} Score:").grid(row=i, column=0)
-        score_entry = tk.Entry(unit_frame, width=10)
-        score_entry.grid(row=i, column=1)
+        row = tk.Frame(unit_frame)
+        row.pack(pady=2)
+
+        tk.Label(row, text=f"Unit {i+1} Score:").pack(side=tk.LEFT)
+        score_entry = tk.Entry(row, width=10)
+        score_entry.pack(side=tk.LEFT, padx=5)
         unit_score_entries.append(score_entry)
 
-        tk.Label(unit_frame, text="Items:").grid(row=i, column=2)
-        item_entry = tk.Entry(unit_frame, width=10)
-        item_entry.grid(row=i, column=3)
+        tk.Label(row, text="Items:").pack(side=tk.LEFT)
+        item_entry = tk.Entry(row, width=10)
+        item_entry.pack(side=tk.LEFT, padx=5)
         unit_item_entries.append(item_entry)
 
 
@@ -102,14 +126,11 @@ def save_data():
     filename = "student_grades.csv"
     write_header = not os.path.exists(
         filename) or os.path.getsize(filename) == 0
-    csvfile = open(filename, "a", newline='')
-    writer = csv.writer(csvfile, delimiter=' ')
-    if write_header:
-        writer.writerow(["student_name", "raw_grade", "final_grade"])
-    for student, data in student_records.items():
-        writer.writerow([student, data["raw_grade"], data["final_grade"]])
-
-    csvfile.close()
+    with open(filename, "a", newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=' ')
+        if write_header:
+            writer.writerow(["student_name", "raw_grade", "final_grade"])
+        writer.writerow([name, raw_grade, final_grade])
 
     messagebox.showinfo(
         "Success", f"{name}'s Final Grade: {final_grade} ({raw_grade})")
@@ -122,25 +143,22 @@ def open_table_window():
         messagebox.showerror("Error", "CSV file not found.")
         return
 
-    csvfile = open(filename, "r", newline='')
-    reader = csv.reader(csvfile, delimiter=' ')
-    headers = next(reader)
+    with open(filename, "r", newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=' ')
+        headers = next(reader)
 
-    table_window = tk.Toplevel()
-    table_window.title("Student Records Table")
-    table_window.geometry("500x400")
+        table_window = tk.Toplevel()
+        table_window.title("Student Records Table")
+        table_window.geometry("500x400")
 
-    tree = ttk.Treeview(table_window, columns=headers, show="headings")
-    for col in headers:
-        tree.heading(col, text=col)
-        tree.column(col, width=100)
-        tree.column(col, anchor=tk.CENTER)
-    tree.pack(padx=10, pady=10, expand=True, fill='both')
+        tree = ttk.Treeview(table_window, columns=headers, show="headings")
+        for col in headers:
+            tree.heading(col, text=col)
+            tree.column(col, width=100, anchor=tk.CENTER)
+        tree.pack(padx=10, pady=10, expand=True, fill='both')
 
-    for row in reader:
-        tree.insert("", tk.END, values=row)
-
-    csvfile.close()
+        for row in reader:
+            tree.insert("", tk.END, values=row)
 
 
 def clear_data():
@@ -160,27 +178,31 @@ app.title("Student Grade Calculator")
 app.geometry("600x900")
 
 tk.Label(app, text="Student Name:").pack()
-name_entry = tk.Entry(app, width=40)
+name_entry = tk.Entry(app, width=40, justify="center")
 name_entry.pack()
 
 tk.Label(app, text="Number of Quizzes:").pack()
-quiz_count_entry = tk.Entry(app, width=10)
+quiz_count_entry = tk.Entry(app, width=10, justify="center")
 quiz_count_entry.pack()
 
 tk.Label(app, text="Number of Unit Tests:").pack()
-unit_count_entry = tk.Entry(app, width=10)
+unit_count_entry = tk.Entry(app, width=10, justify="center")
 unit_count_entry.pack()
 
 tk.Button(app, text="Generate Fields", command=generate_fields).pack(pady=5)
 
 tk.Label(app, text="Enter Quiz Scores and Total Items").pack(pady=5)
-quiz_frame = tk.Frame(app)
+quiz_wrapper = tk.Frame(app)
+quiz_wrapper.pack()
+quiz_frame = tk.Frame(quiz_wrapper)
 quiz_frame.pack()
 quiz_score_entries = []
 quiz_item_entries = []
 
 tk.Label(app, text="Enter Unit Test Scores and Total Items").pack(pady=5)
-unit_frame = tk.Frame(app)
+unit_wrapper = tk.Frame(app)
+unit_wrapper.pack()
+unit_frame = tk.Frame(unit_wrapper)
 unit_frame.pack()
 unit_score_entries = []
 unit_item_entries = []
