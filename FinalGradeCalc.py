@@ -159,6 +159,7 @@ def open_table_window():
 
         for row in reader:
             tree.insert("", tk.END, values=row)
+        csvfile.close()
 
 
 def clear_data():
