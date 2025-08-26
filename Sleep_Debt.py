@@ -8,8 +8,8 @@ def calculate_sleep_debt():
     total_actual_sleep = 0
 
     try:
-        for i in range(7):
-            hours = float(entries[i].get())
+        for day in range(7):
+            hours = float(entries[day].get())
             if hours < 0:
                 messagebox.showerror(
                     "Invalid Input", f"Day {i+1}: Sleep hours can't be negative.")
@@ -22,8 +22,8 @@ def calculate_sleep_debt():
 
     sleep_debt = total_desired_sleep - total_actual_sleep
 
-    report = f"Total sleep needed: {total_desired_sleep} hours\n"
-    report += f"Total sleep you got: {total_actual_sleep} hours\n\n"
+    report = f"Total sleep needed: \t{total_desired_sleep} hours\n"
+    report += f"Total sleep you got: \t{total_actual_sleep} hours\n\n"
 
     if sleep_debt > 0:
         report += f"You have a sleep debt of {sleep_debt:.1f} hours. Time to catch up!"
@@ -52,8 +52,7 @@ for i in range(7):
 tk.Button(app, text="Calculate Sleep Debt",
           command=calculate_sleep_debt).pack(pady=20)
 
-output_label = tk.Label(app, text="", font=(
-    "Arial", 12), wraplength=300, justify="left")
+output_label = tk.Label(app, text="")
 output_label.pack(pady=10)
 
 app.mainloop()
